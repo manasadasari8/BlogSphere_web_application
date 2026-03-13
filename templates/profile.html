@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}{{ profile_user.username }}'s Profile - BlogSphere{% endblock %}
+
+{% block content %}
+{% if edit %}
+<div class="edit-profile-form">
+    <h2>Edit Profile</h2>
+    <form method="post" enctype="multipart/form-data">
+        <label for="bio">Bio:</label>
+        <textarea name="bio" id="bio" rows="4">{{ profile_user.bio or '' }}</textarea>
+        <label for="profile_image">Profile Picture:</label>
+        <input type="file" name="profile_image" id="profile_image" accept="image/*">
+        <button type="submit" class="btn btn-primary">Save</button>
+        <a href="{{ url_for('user_profile', username=profile_user.username) }}" class="btn">Cancel</a>
+    </form>
+</div>
+{% else %}
+<div class="profile-header">
+    <div class="profile-avatar">
+        {% if profile_user.profile_image and profile_user.profile_image != 'default.png' %}
+            <img src="{{ url_for('static', filename='uploads/' ~ profile_user.profile_image) }}" alt="Profile Picture" class="profile-img-circle">
+        {% else %}
+            {{ profile_user.username[0]|upper }}
+        {% endif %}
+    </div>
+    <div class="profile-info">
+        <h1>{{ profile_user.username }}</h1>
+        <p class="profile-bio">{{ profile_user.bio or 'No bio yet.' }}</p>
+        <div class="profile-meta">
+            <span>{{ posts|length }} posts</span>
+        </div>
+        {% if profile_user.id == current_user.id %}
+        <a href="{{ url_for('edit_profile') }}" class="btn btn-primary">Edit Profile</a>
+        {% endif %}
+    </div>
+</div>
+
+<h2>{{ profile_user.username }}'s Posts</h2>
+<div class="profile-posts-grid">
+{% if posts %}
+    {% for post in posts %}
+    <div class="profile-post-card">
+        <div class="post-header">
+            <div class="avatar" aria-hidden="true">{{ post.author.username[0]|upper }}</div>
+            <div class="post-meta">
+                <span class="post-author"><a href="{{ url_for('user_profile', username=post.author.username) }}">{{ post.author.username }}</a></span>
+                <span class="post-date">{{ post.created_at.strftime('%b %d, %Y') }}</span>
+            </div>
+        </div>
+        <h3 class="post-title">{{ post.title }}</h3>
+        <p class="post-content">{{ post.content }}</p>
+        <div class="post-actions">
+            <div class="post-engage">
+                {% set liked = (post.likes | selectattr('user_id', 'equalto', current_user.id) | list | length) > 0 %}
+                <form method="POST" action="{{ url_for('like_post', post_id=post.id) }}" class="like-form">
+                    <button type="submit" class="like-btn {% if liked %}liked{% endif %}">
+                        {% if liked %}Unlike{% else %}Like{% endif %}
+                        <span class="like-count">{{ post.likes|length }}</span>
+                    </button>
+                </form>
+            </div>
+            <div class="post-stats">
+                <span>{{ post.comments|length }} comments</span>
+            </div>
+            {% if post.author.id == current_user.id %}
+            <div class="post-manage">
+                <a class="edit-link" href="{{ url_for('edit_post', post_id=post.id) }}">Edit</a>
+                <form method="POST" action="{{ url_for('delete_post', post_id=post.id) }}" class="delete-form">
+                    <button type="submit" onclick="return confirm('Delete this post?')">Delete</button>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+        {% if post.comments %}
+        <div class="comments">
+            {% for comment in post.comments %}
+            <div class="comment">
+                <strong><a href="{{ url_for('user_profile', username=comment.author.username) }}">{{ comment.author.username }}</a></strong>
+                <span class="comment-date">{{ comment.created_at.strftime('%b %d, %Y %H:%M') }}</span>
+                <p class="comment-body">{{ comment.content }}</p>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        <form method="POST" action="{{ url_for('comment_post', post_id=post.id) }}" class="comment-form">
+            <input type="text" name="comment" placeholder="Add a comment..." required>
+            <button type="submit">Comment</button>
+        </form>
+    </div>
+    {% endfor %}
+{% else %}
+    <p>No posts yet.</p>
+{% endif %}
+</div>
+{% endif %}
+{% endblock %}

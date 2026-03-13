@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
+from flask_migrate import Migrate
 from werkzeug.security import generate_password_hash, check_password_hash
 from models import db, User, Post, Comment, Like, Notification
 
@@ -7,6 +8,7 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key_here'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 db.init_app(app)
+migrate = Migrate(app, db)
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -152,6 +154,31 @@ def register():
 def logout():
     logout_user()
     return redirect(url_for('login'))
+
+@app.route('/users/<username>')
+@login_required
+def user_profile(username):
+    user = User.query.filter_by(username=username).first_or_404()
+    posts = Post.query.filter_by(user_id=user.id).order_by(Post.created_at.desc()).all()
+    return render_template('profile.html', profile_user=user, posts=posts)
+
+@app.route('/users/profile', methods=['GET', 'POST'])
+@login_required
+def edit_profile():
+    if request.method == 'POST':
+        bio = request.form.get('bio', '')
+        current_user.bio = bio
+        file = request.files.get('profile_image')
+        if file and file.filename:
+            import os
+            from werkzeug.utils import secure_filename
+            filename = secure_filename(file.filename)
+            upload_path = os.path.join('static', 'uploads', filename)
+            file.save(upload_path)
+            current_user.profile_image = filename
+        db.session.commit()
+        return redirect(url_for('user_profile', username=current_user.username))
+    return render_template('profile.html', profile_user=current_user, posts=Post.query.filter_by(user_id=current_user.id).order_by(Post.created_at.desc()).all(), edit=True)
 
 if __name__ == '__main__':
     with app.app_context():

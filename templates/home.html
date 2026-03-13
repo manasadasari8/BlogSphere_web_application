@@ -19,7 +19,7 @@
     <div class="post-header">
         <div class="avatar" aria-hidden="true">{{ post.author.username[0]|upper }}</div>
         <div class="post-meta">
-            <span class="post-author">{{ post.author.username }}</span>
+            <span class="post-author"><a href="{{ url_for('user_profile', username=post.author.username) }}">{{ post.author.username }}</a></span>
             <span class="post-date">{{ post.created_at.strftime('%b %d, %Y') }}</span>
         </div>
     </div>
