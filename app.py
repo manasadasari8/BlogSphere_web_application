@@ -22,6 +22,43 @@ def home():
     posts = Post.query.order_by(Post.created_at.desc()).all()
     return render_template('home.html', posts=posts)
 
+@app.route('/create_post', methods=['GET', 'POST'])
+@login_required
+def create_post():
+    if request.method == 'POST':
+        title = request.form['title']
+        content = request.form['content']
+        new_post = Post(user_id=current_user.id, title=title, content=content)
+        db.session.add(new_post)
+        db.session.commit()
+        return redirect(url_for('home'))
+    return render_template('create_post.html')
+
+@app.route('/edit_post/<int:post_id>', methods=['GET', 'POST'])
+@login_required
+def edit_post(post_id):
+    post = Post.query.get_or_404(post_id)
+    if post.user_id != current_user.id:
+        flash('You can only edit your own posts.')
+        return redirect(url_for('home'))
+    if request.method == 'POST':
+        post.title = request.form['title']
+        post.content = request.form['content']
+        db.session.commit()
+        return redirect(url_for('home'))
+    return render_template('edit_post.html', post=post)
+
+@app.route('/delete_post/<int:post_id>', methods=['POST'])
+@login_required
+def delete_post(post_id):
+    post = Post.query.get_or_404(post_id)
+    if post.user_id != current_user.id:
+        flash('You can only delete your own posts.')
+        return redirect(url_for('home'))
+    db.session.delete(post)
+    db.session.commit()
+    return redirect(url_for('home'))
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':

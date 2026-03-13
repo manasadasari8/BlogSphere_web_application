@@ -98,12 +98,53 @@ main {
     background-color: #fafafa;
 }
 
-.post h3 {
-    margin-top: 0;
+.post-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
 }
 
-.post small {
+.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #007bff;
+    margin-right: 10px;
+}
+
+.post-title {
+    color: #007bff;
+    font-weight: bold;
+    margin: 10px 0;
+}
+
+.post-stats {
+    margin: 10px 0;
+    font-size: 0.9em;
     color: #666;
+}
+
+.post-stats span {
+    margin-right: 15px;
+}
+
+.post-actions {
+    margin-top: 10px;
+}
+
+.post-actions a, .post-actions button {
+    margin-right: 10px;
+    padding: 5px 10px;
+    text-decoration: none;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.post-actions button:hover {
+    background-color: #0056b3;
 }
 
 form {
