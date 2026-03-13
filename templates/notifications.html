@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Notifications - BlogSphere{% endblock %}
+
+{% block content %}
+<h2>Notifications</h2>
+{% if notifications %}
+    <ul class="notifications">
+        {% for note in notifications %}
+            <li class="notification {% if not note.is_read %}unread{% endif %}">
+                <div class="notification-message">{{ note.message }}</div>
+                <div class="notification-meta">{{ note.created_at.strftime('%b %d, %Y %H:%M') }}</div>
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>No notifications yet.</p>
+{% endif %}
+{% endblock %}

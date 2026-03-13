@@ -5,33 +5,77 @@
 {% block body_class %}auth-page{% endblock %}
 
 {% block content %}
-<div class="auth-card" aria-label="Authentication card">
-    <h2 class="auth-title">Sign In</h2>
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+<ul class="flashes">
+{% for message in messages %}
+{% if message != "Please log in to access this page." %}
+<li>{{ message }}</li>
+{% endif %}
+{% endfor %}
+</ul>
+{% endif %}
+{% endwith %}
+<div class="auth-card">
+    <div class="auth-illustration">
+        <div class="illustration-circle">
+            <div class="illustration-icon">👤</div>
+        </div>
+    </div>
+    <div class="auth-form-section">
+        <h2 class="auth-title">Member Login</h2>
 
-    <form id="login-form" class="auth-form" method="POST" action="{{ url_for('login') }}" {% if active_form != 'login' %}style="display: none;"{% endif %}>
-        <label for="login-username">Username</label>
-        <input type="text" id="login-username" name="username" required autocomplete="username">
+        <form id="login-form" class="auth-form" method="POST" action="{{ url_for('login') }}" {% if active_form != 'login' %}style="display: none;"{% endif %}>
+            <div class="input-group">
+                <label for="login-username">Username</label>
+                <div class="input-wrapper">
+                    <span class="input-icon">👤</span>
+                    <input type="text" id="login-username" name="username" placeholder="Enter your username" required autocomplete="username">
+                </div>
+            </div>
 
-        <label for="login-password">Password</label>
-        <input type="password" id="login-password" name="password" required autocomplete="current-password">
+            <div class="input-group">
+                <label for="login-password">Password</label>
+                <div class="input-wrapper">
+                    <span class="input-icon">🔒</span>
+                    <input type="password" id="login-password" name="password" placeholder="Enter your password" required autocomplete="current-password">
+                </div>
+            </div>
 
-        <button type="submit">Sign In</button>
-        <p class="toggle-text">Don't have an account? <a href="#" id="show-register">Create one</a></p>
-    </form>
+            <button type="submit" class="login-btn">Sign In</button>
+            <a href="#" class="forgot-link">Forgot password?</a>
+            <p class="toggle-text">Don't have an account? <a href="#" id="show-register">Create one</a></p>
+        </form>
 
-    <form id="register-form" class="auth-form" method="POST" action="{{ url_for('register') }}" {% if active_form != 'register' %}style="display: none;"{% endif %}>
-        <label for="register-username">Username</label>
-        <input type="text" id="register-username" name="username" required autocomplete="username">
+        <form id="register-form" class="auth-form" method="POST" action="{{ url_for('register') }}" {% if active_form != 'register' %}style="display: none;"{% endif %}>
+            <div class="input-group">
+                <label for="register-username">Username</label>
+                <div class="input-wrapper">
+                    <span class="input-icon">👤</span>
+                    <input type="text" id="register-username" name="username" placeholder="Choose a username" required autocomplete="username">
+                </div>
+            </div>
 
-        <label for="register-email">Email</label>
-        <input type="email" id="register-email" name="email" required autocomplete="email">
+            <div class="input-group">
+                <label for="register-email">Email</label>
+                <div class="input-wrapper">
+                    <span class="input-icon">📧</span>
+                    <input type="email" id="register-email" name="email" placeholder="Enter your email" required autocomplete="email">
+                </div>
+            </div>
 
-        <label for="register-password">Password</label>
-        <input type="password" id="register-password" name="password" required autocomplete="new-password">
+            <div class="input-group">
+                <label for="register-password">Password</label>
+                <div class="input-wrapper">
+                    <span class="input-icon">🔒</span>
+                    <input type="password" id="register-password" name="password" placeholder="Create a password" required autocomplete="new-password">
+                </div>
+            </div>
 
-        <button type="submit">Create Account</button>
-        <p class="toggle-text">Already have an account? <a href="#" id="show-login">Sign in</a></p>
-    </form>
+            <button type="submit" class="login-btn">Create Account</button>
+            <p class="toggle-text">Already have an account? <a href="#" id="show-login">Sign in</a></p>
+        </form>
+    </div>
 </div>
 
 <script>
