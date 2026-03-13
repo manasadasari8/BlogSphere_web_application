@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
-from models import db, User, Post, Comment, Like
+from models import db, User, Post, Comment, Like, Notification
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key_here'
@@ -16,11 +16,30 @@ login_manager.login_view = 'login'
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+@app.context_processor
+def inject_unread_count():
+    if current_user.is_authenticated:
+        unread_count = Notification.query.filter_by(user_id=current_user.id, is_read=False).count()
+        return dict(unread_count=unread_count)
+    return dict(unread_count=0)
+
 @app.route('/')
 @login_required
 def home():
-    posts = Post.query.order_by(Post.created_at.desc()).all()
-    return render_template('home.html', posts=posts)
+    sort = request.args.get('sort', 'newest')
+
+    if sort == 'popular':
+        posts = (
+            Post.query
+            .outerjoin(Like)
+            .group_by(Post.id)
+            .order_by(db.func.count(Like.id).desc(), Post.created_at.desc())
+            .all()
+        )
+    else:
+        posts = Post.query.order_by(Post.created_at.desc()).all()
+
+    return render_template('home.html', posts=posts, sort=sort)
 
 @app.route('/create_post', methods=['GET', 'POST'])
 @login_required
@@ -58,6 +77,48 @@ def delete_post(post_id):
     db.session.delete(post)
     db.session.commit()
     return redirect(url_for('home'))
+
+@app.route('/like/<int:post_id>', methods=['POST'])
+@login_required
+def like_post(post_id):
+    post = Post.query.get_or_404(post_id)
+    existing_like = Like.query.filter_by(user_id=current_user.id, post_id=post_id).first()
+    if existing_like:
+        db.session.delete(existing_like)
+    else:
+        new_like = Like(user_id=current_user.id, post_id=post_id)
+        db.session.add(new_like)
+        if post.user_id != current_user.id:
+            message = f"{current_user.username} liked your post '{post.title}'"
+            notification = Notification(user_id=post.user_id, message=message)
+            db.session.add(notification)
+    db.session.commit()
+    return redirect(request.referrer or url_for('home'))
+
+@app.route('/comment/<int:post_id>', methods=['POST'])
+@login_required
+def comment_post(post_id):
+    post = Post.query.get_or_404(post_id)
+    content = request.form.get('comment', '').strip()
+    if content:
+        new_comment = Comment(user_id=current_user.id, post_id=post_id, content=content)
+        db.session.add(new_comment)
+        if post.user_id != current_user.id:
+            message = f"{current_user.username} commented on your post '{post.title}'"
+            notification = Notification(user_id=post.user_id, message=message)
+            db.session.add(notification)
+        db.session.commit()
+    return redirect(request.referrer or url_for('home'))
+
+@app.route('/notifications')
+@login_required
+def notifications():
+    notes = Notification.query.filter_by(user_id=current_user.id).order_by(Notification.created_at.desc()).all()
+    for note in notes:
+        if not note.is_read:
+            note.is_read = True
+    db.session.commit()
+    return render_template('notifications.html', notifications=notes)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
