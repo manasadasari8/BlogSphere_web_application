@@ -6,7 +6,7 @@
     <title>{% block title %}BlogSphere{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
-<body>
+<body class="{% block body_class %}{% endblock %}">
     <header>
         <h1>BlogSphere</h1>
         <nav>

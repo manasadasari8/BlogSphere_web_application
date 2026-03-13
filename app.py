@@ -32,7 +32,7 @@ def login():
             login_user(user)
             return redirect(url_for('home'))
         flash('Invalid username or password')
-    return render_template('login.html')
+    return render_template('auth.html', active_form='login')
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -47,7 +47,7 @@ def register():
         db.session.commit()
         flash('Registration successful! Please log in.')
         return redirect(url_for('login'))
-    return render_template('register.html')
+    return render_template('auth.html', active_form='register')
 
 @app.route('/logout')
 @login_required
