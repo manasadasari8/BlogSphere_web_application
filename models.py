@@ -10,6 +10,7 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(150), unique=True, nullable=False)
     password_hash = db.Column(db.String(150), nullable=False)
     bio = db.Column(db.Text, nullable=True)
+    profile_image = db.Column(db.String(200), default='default.png')
     posts = db.relationship('Post', backref='author', lazy=True)
     comments = db.relationship('Comment', backref='author', lazy=True)
     likes = db.relationship('Like', backref='user', lazy=True)

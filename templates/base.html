@@ -12,6 +12,7 @@
         <nav>
             {% if current_user.is_authenticated %}
                 <a href="{{ url_for('home') }}">Home</a>
+                <a href="{{ url_for('user_profile', username=current_user.username) }}">Profile</a>
                 <a href="{{ url_for('notifications') }}">Notifications{% if unread_count %} ({{ unread_count }}){% endif %}</a>
                 <a href="{{ url_for('logout') }}">Logout</a>
             {% else %}
